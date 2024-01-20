@@ -1,0 +1,39 @@
+[package]
+name = "gt_graph_wasm"
+version = "1.0.0"
+authors = ["Wasm & Rust interface for gt graph file format"]
+edition = "2021"
+
+[features]
+default = ["console_error_panic_hook"]
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+wasm-bindgen = "0.2.90"
+# The `console_error_panic_hook` crate provides better debugging of panics by
+# logging them with `console.error`. This is great for development, but requires
+# all the `std::fmt` and `std::panicking` infrastructure, so isn't great for
+# code size when deploying.
+console_error_panic_hook = { version = "0.1.7", optional = true }
+wasm-bindgen-futures = "0.4.40"
+js-sys = "0.3.67"
+zstd = { version = "0.13.0", default-features = false, features = ["wasm"] }
+ruzstd = "0.5.0"
+
+
+[dependencies.web-sys]
+version = "0.3.67"
+features = [
+    'Headers',
+    'Request',
+    'RequestInit',
+    'RequestMode',
+    'Response',
+    'Window',
+]
+
+[dependencies.byteorder]
+feaversion = "1.5.0"
+features = ["i128"]
