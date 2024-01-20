@@ -2,7 +2,7 @@
     <h1 align="center">GT_GRAPH_WASM</h1>
 </p>
 <p align="center">
-    <em>WASM & Rust bindings for the gt file format</em>
+    <em>WASM & Rust reader for the gt file format</em>
 </p>
 <p align="center">
 	<img src="https://img.shields.io/github/license/semohr/gt_graph_wasm?style=flat&color=0080ff" alt="license">
