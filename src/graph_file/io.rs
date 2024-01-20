@@ -5,7 +5,7 @@ use byteorder::{LittleEndian, ReadBytesExt};
 use wasm_bindgen::prelude::*;
 
 use super::log;
-use crate::GraphFile::properties::Property;
+use crate::graph_file::properties::Property;
 
 impl TryFrom<&[u8]> for GraphFile {
     type Error = JsValue;

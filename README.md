@@ -79,6 +79,16 @@ const graph = await Graph.from_data(<Uint8Array>);
 
 ```
 
+You can also load a graph directly from the [Netzschleuder](https://networks.skewed.de/) Repository:
+
+```js
+const graph = await Graph.from_netzschleuder("advogato");
+
+// for databases with multiple graphs, you can specify the graph name
+const graph = await Graph.from_netzschleuder("fresh_webs", "AkatoreA");
+```
+
+
 
 ### Rust
 

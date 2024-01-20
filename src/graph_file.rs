@@ -3,11 +3,8 @@ mod properties;
 
 use crate::log;
 
-use wasm_bindgen::prelude::*;
-
 const PKG_NAME: &str = env!("CARGO_PKG_NAME");
 const PKG_VERSION: &str = env!("CARGO_PKG_VERSION");
-const MAGIC_STRING: [u8; 6] = [0xe2, 0x9b, 0xbe, 0x20, 0x67, 0x74];
 
 /** The GraphFile struct represents a graph in the gt file format.
  *
@@ -31,7 +28,6 @@ const MAGIC_STRING: [u8; 6] = [0xe2, 0x9b, 0xbe, 0x20, 0x67, 0x74];
  *
  *  
  */
-#[wasm_bindgen(js_class = GraphFile)]
 pub struct GraphFile {
     version_number: u8,
     endianness: u8,
@@ -61,18 +57,5 @@ impl Default for GraphFile {
             out_neighbors: Vec::new(),
             properties: Vec::new(),
         }
-    }
-}
-
-#[wasm_bindgen(js_class = GraphFile)]
-impl GraphFile {
-    #[wasm_bindgen(getter)]
-    pub fn comment(&self) -> String {
-        self.comment.clone()
-    }
-
-    pub fn get_out_neighbors(&self, v: usize) -> js_sys::BigUint64Array {
-        let neighbors = &self.out_neighbors[v];
-        return js_sys::BigUint64Array::from(neighbors.as_slice());
     }
 }

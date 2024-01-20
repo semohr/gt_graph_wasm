@@ -1,9 +1,9 @@
 #[macro_use]
 mod utils;
 
-mod Graph;
-mod GraphFile;
 mod decode;
+pub mod graph;
+pub mod graph_file;
 mod io;
 
 use utils::set_panic_hook;
@@ -30,6 +30,8 @@ extern "C" {
 }
 
 #[wasm_bindgen(start)]
-pub fn main() {
+// cant be named main because of wasm-bindgen-test
+pub fn run() {
     set_panic_hook();
+    panic!("Hello, world!");
 }

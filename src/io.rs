@@ -1,9 +1,13 @@
-use wasm_bindgen::JsCast;
-use wasm_bindgen::JsValue;
+use js_sys::Promise;
+use wasm_bindgen::{prelude::wasm_bindgen, JsCast, JsValue};
 use wasm_bindgen_futures::JsFuture;
 use web_sys::{Request, RequestInit, RequestMode, Response};
 
-use crate::GraphFile::GraphFile;
+#[wasm_bindgen]
+extern "C" {
+    #[wasm_bindgen(js_name = fetch)]
+    fn fetch_with_request_and_init(input: &Request, init: &RequestInit) -> Promise;
+}
 
 /** Create a fetch request to download the binary file and parse it
  * as a graph.
@@ -16,9 +20,12 @@ pub async fn fetch_binary(url: String) -> Result<Vec<u8>, JsValue> {
     let request = Request::new_with_str_and_init(&url, &ops)?;
     // send headers and request binary
     request.headers();
+    //Set origin header
+    request
+        .headers()
+        .set("Origin", "https://networks.skewed.de")?;
 
-    let window = web_sys::window().expect("should have a window in this context");
-    let resp_value = JsFuture::from(window.fetch_with_request(&request)).await?;
+    let resp_value = JsFuture::from(fetch_with_request_and_init(&request, &ops)).await?;
     // `resp_value` is a `Response` object.
     assert!(resp_value.is_instance_of::<Response>());
     let resp: Response = resp_value.dyn_into()?;
