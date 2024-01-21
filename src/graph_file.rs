@@ -1,7 +1,6 @@
+use std::fmt::{self, Debug};
 mod io;
-mod properties;
-
-use crate::log;
+pub mod properties;
 
 const PKG_NAME: &str = env!("CARGO_PKG_NAME");
 const PKG_VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -33,12 +32,13 @@ pub struct GraphFile {
     endianness: u8,
 
     comment: String,
-    directed: bool,
-    num_nodes: u64,
-    out_neighbors: Vec<Vec<u64>>,
+    pub directed: bool,
+    pub num_nodes: u64,
+    pub num_edges: u64,
+    pub out_neighbors: Vec<Vec<u64>>,
 
     // Property maps
-    properties: Vec<properties::Property>,
+    pub properties: Vec<properties::Property>,
 }
 
 impl Default for GraphFile {
@@ -54,8 +54,23 @@ impl Default for GraphFile {
             comment: comment,
             directed: false,
             num_nodes: 0,
+            num_edges: 0,
             out_neighbors: Vec::new(),
             properties: Vec::new(),
         }
+    }
+}
+
+impl Debug for GraphFile {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("GraphFile")
+            .field("version_number", &self.version_number)
+            .field("endianness", &self.endianness)
+            .field("comment", &self.comment)
+            .field("directed", &self.directed)
+            .field("num_nodes", &self.num_nodes)
+            .field("num_edges", &self.num_edges)
+            .field("properties", &self.properties)
+            .finish()
     }
 }

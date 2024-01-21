@@ -1,11 +1,10 @@
 use std::io::Read;
 
 use super::GraphFile;
+use crate::graph_file::properties::Property;
+use crate::log;
 use byteorder::{LittleEndian, ReadBytesExt};
 use wasm_bindgen::prelude::*;
-
-use super::log;
-use crate::graph_file::properties::Property;
 
 impl TryFrom<&[u8]> for GraphFile {
     type Error = JsValue;
@@ -41,14 +40,12 @@ impl TryFrom<&[u8]> for GraphFile {
         let mut comment = vec![0; c_len];
         cursor.read_exact(&mut comment).unwrap();
         let comment = String::from_utf8_lossy(&comment).to_string();
-        console_log!("comment {}", comment);
 
         // Read directed
         let directed = cursor.read_u8().unwrap() == 0x01;
 
         // Read number of nodes
         let num_nodes = cursor.read_u64::<LittleEndian>().unwrap();
-        console_log!("num_nodes {}", num_nodes);
 
         // Read neighbor list
         let out_neighbors = get_out_neighbors(&mut cursor, num_nodes);
@@ -60,7 +57,6 @@ impl TryFrom<&[u8]> for GraphFile {
             .sum::<usize>()
             .try_into()
             .unwrap();
-        console_log!("num_edges {}", num_edges);
 
         // Parse properties
         let num_properties = cursor.read_u64::<LittleEndian>().unwrap();
@@ -70,15 +66,19 @@ impl TryFrom<&[u8]> for GraphFile {
             .map(|_| Property::from_data(&mut cursor, num_nodes, num_edges))
             .collect::<Result<Vec<Property>, JsValue>>()?;
 
-        Ok(GraphFile {
+        let gf = GraphFile {
             version_number: version_number,
             endianness: endianness,
             comment: comment,
             directed: directed,
             num_nodes: num_nodes,
+            num_edges: num_edges,
             out_neighbors: out_neighbors,
             properties: properties,
-        })
+        };
+        console_log!("Successfully loaded {:#?}", gf);
+
+        Ok(gf)
     }
 }
 

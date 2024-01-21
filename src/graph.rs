@@ -1,15 +1,23 @@
 use wasm_bindgen::prelude::*;
+pub mod io;
 
-use crate::decode;
-use crate::graph_file::GraphFile;
-use crate::io;
+use crate::graph_file::{properties::PropertyMapType, GraphFile};
 
-/** This is a wrapper around the GraphFile class
- * and allows for a number of graph operations.
+/** The Graph struct represents a graph and provides a number
+ * of methods to access the data.
  */
 #[wasm_bindgen]
 pub struct Graph {
     file: GraphFile,
+}
+
+trait GraphPropertiesTrait {
+    /// Get vec of graph properties
+    fn graph_properties(&self) -> js_sys::Map;
+    /// Get vec of node properties
+    fn node_properties(&self) -> js_sys::Map;
+    /// Get vec of edge properties
+    fn edge_properties(&self) -> js_sys::Map;
 }
 
 #[wasm_bindgen]
@@ -21,44 +29,122 @@ impl Graph {
         }
     }
 
-    /** Create a graph from a url. The url should point
-     * to a binary file in the gt format. Can be compressed
-     * with zsdt.
-     */
-    pub async fn from_url(url: String) -> Result<Graph, JsValue> {
-        let data = io::fetch_binary(url).await?;
-        let data = decode::decodebuffer(&data)?;
-        let graph_file: GraphFile = data.as_slice().try_into()?;
-        Ok(Graph { file: graph_file })
+    #[wasm_bindgen(getter)]
+    pub fn num_nodes(&self) -> u64 {
+        self.file.num_nodes
     }
 
-    /** Create a graph from the netzschleuder repository.
-     *
-     *  https://networks.skewed.de
-     */
-    pub async fn from_netzschleuder(
-        network: String,
-        sub_network: Option<String>,
-    ) -> Result<Graph, JsValue> {
-        let sub_network = match sub_network {
-            Some(sub_network) => sub_network,
-            None => network.clone(),
-        };
-
-        let url = format!(
-            "https://networks.skewed.de/net/{}/files/{}.gt.zst",
-            network, sub_network
-        );
-        Graph::from_url(url).await
+    #[wasm_bindgen(getter)]
+    pub fn num_edges(&self) -> u64 {
+        self.file.num_edges
     }
 
-    /** Create a graph from a binary file.
-     */
-    pub fn from_data(data: js_sys::Uint8Array) -> Result<Graph, JsValue> {
-        let data = data.to_vec();
-        let data = decode::decodebuffer(&data)?;
-        let graph_file: GraphFile = data.as_slice().try_into()?;
-        Ok(Graph { file: graph_file })
+    #[wasm_bindgen(getter)]
+    pub fn directed(&self) -> bool {
+        self.file.directed
+    }
+
+    pub fn get_out_neighbors(&self, node: u64) -> js_sys::BigUint64Array {
+        let ret = js_sys::BigUint64Array::from(self.file.out_neighbors[node as usize].as_slice());
+        ret
+    }
+
+    pub fn get_in_neighbors(&self, node: u64) -> js_sys::BigUint64Array {
+        let mut in_neighbors: Vec<u64> = Vec::new();
+        for (i, neighbors) in self.file.out_neighbors.iter().enumerate() {
+            if neighbors.contains(&node) {
+                in_neighbors.push(i as u64);
+            }
+        }
+        let ret = js_sys::BigUint64Array::from(in_neighbors.as_slice());
+        ret
+    }
+
+    pub fn graph_properties(&mut self, name: String) -> JsValue {
+        let mut ret = JsValue::NULL;
+        for property in &mut self.file.properties {
+            if property.name == name {
+                match property.map_type {
+                    PropertyMapType::Graph => {
+                        ret = property.data_view();
+                        break;
+                    }
+                    _ => {}
+                }
+            }
+        }
+        ret
+    }
+
+    pub fn vertex_properties(&mut self, name: String) -> JsValue {
+        let mut ret = JsValue::NULL;
+        for property in &mut self.file.properties {
+            if property.name == name {
+                match property.map_type {
+                    PropertyMapType::Vertex => {
+                        ret = property.data_view();
+                        break;
+                    }
+                    _ => {}
+                }
+            }
+        }
+        ret
+    }
+
+    pub fn edge_properties(&mut self, name: String) -> JsValue {
+        let mut ret = JsValue::NULL;
+        for property in &mut self.file.properties {
+            if property.name == name {
+                match property.map_type {
+                    PropertyMapType::Edge => {
+                        ret = property.data_view();
+                        break;
+                    }
+                    _ => {}
+                }
+            }
+        }
+        ret
+    }
+
+    pub fn get_vertex_property_names(&self) -> js_sys::Array {
+        let ret = js_sys::Array::new();
+        for property in &self.file.properties {
+            match property.map_type {
+                PropertyMapType::Vertex => {
+                    ret.push(&JsValue::from_str(&property.name));
+                }
+                _ => {}
+            }
+        }
+        ret
+    }
+
+    pub fn get_edge_property_names(&self) -> js_sys::Array {
+        let ret = js_sys::Array::new();
+        for property in &self.file.properties {
+            match property.map_type {
+                PropertyMapType::Edge => {
+                    ret.push(&JsValue::from_str(&property.name));
+                }
+                _ => {}
+            }
+        }
+        ret
+    }
+
+    pub fn get_graph_property_names(&self) -> js_sys::Array {
+        let ret = js_sys::Array::new();
+        for property in &self.file.properties {
+            match property.map_type {
+                PropertyMapType::Graph => {
+                    ret.push(&JsValue::from_str(&property.name));
+                }
+                _ => {}
+            }
+        }
+        ret
     }
 }
 
