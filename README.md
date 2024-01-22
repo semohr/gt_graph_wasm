@@ -5,8 +5,9 @@
     <em>WASM & Rust reader for the gt file format</em>
 </p>
 <p align="center">
-	<img src="https://img.shields.io/github/license/semohr/gt_graph_wasm?style=flat&color=0080ff" alt="license">
+        <img src="https://github.com/semohr/gt_graph_wasm/actions/workflows/rust.yml/badge.svg?branch=main" alt="test_status">
 	<img src="https://img.shields.io/github/last-commit/semohr/gt_graph_wasm?style=flat&color=0080ff" alt="last-commit">
+	<img src="https://img.shields.io/github/license/semohr/gt_graph_wasm?style=flat&color=0080ff" alt="license">
 	<img src="https://img.shields.io/badge/Rust-000000.svg?style=flat&logo=Rust&logoColor=white" alt="Rust">
 	<img src="https://img.shields.io/badge/Webpack-8DD6F9.svg?style=flat&logo=Webpack&logoColor=black" alt="Webpack">
 <p>
