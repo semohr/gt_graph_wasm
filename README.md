@@ -2,7 +2,7 @@
     <h1 align="center">GT_GRAPH_WASM</h1>
 </p>
 <p align="center">
-    <em>WASM & Rust reader for the gt file format</em>
+    <em>JS & Rust reader for the gt file format</em>
 </p>
 <p align="center">
         <img src="https://github.com/semohr/gt_graph_wasm/actions/workflows/rust.yml/badge.svg?branch=main" alt="test_status">
@@ -22,29 +22,6 @@ This is a WebAssembly module for loading graphs in the [gt file format](https://
 At the moment only loading graphs is supported. Writing capabilities might be added in the future but are not a priority for me as this library was developed to allow visualizing gt graphs in the browser.
 
 
-##  Repository Structure
-
-```sh
-└── gt_graph_wasm/
-    ├── Cargo.toml
-    ├── index.js
-    ├── package-lock.json
-    ├── package.json
-    ├── src
-    │   ├── Graph.rs
-    │   ├── GraphFile
-    │   │   ├── io.rs
-    │   │   └── properties.rs
-    │   ├── GraphFile.rs
-    │   ├── decode.rs
-    │   ├── io.rs
-    │   ├── lib.rs
-    │   └── utils.rs
-    └── webpack.config.js
-```
-
----
-
 ##  Getting Started
 
 
@@ -56,44 +33,87 @@ The code is compiled to WebAssembly and bundled into a JavaScript module. You ca
 The easiest way to get started is by installing the package from npm:
 
 ```sh
-# Doesnt work yet (package publishing pipeline is not set up yet)
-# npm install gt_graph_wasm 
+npm i @semohr/gt_graph_wasm
 ```
 
-To load a graph file, you can use the `from_url` function:
+
+#### Loading a graph
+
+To load a graph file, you can use the `from_url`, `from_data` or `from_netzschleuder` functions:
 
 ```js
-import { Graph } from './gt_graph_wasm';
+import { Graph } from "@semohr/gt_graph_wasm";
 
+//This runs a fetch request to load the graph file from the given URL.
 const graph = await Graph.from_url("<path-to-graph-file>");
 
-```
-
-This runs a fetch request to load the graph file from the given URL.
-
-
-If you want to load directly from a binary buffer, you can use the `from_data` function:
-
-```js
-
+//You can also load a graph directly from a binary buffer
 const graph = await Graph.from_data(<Uint8Array>);
 
-```
-
-You can also load a graph directly from the [Netzschleuder](https://networks.skewed.de/) Repository:
-
-```js
+//You can also load a graph directly from the Netzschleuder Repository
 const graph = await Graph.from_netzschleuder("advogato");
 
 // for databases with multiple graphs, you can specify the graph name
 const graph = await Graph.from_netzschleuder("fresh_webs", "AkatoreA");
+
+console.log(graph);
 ```
 
 
+#### Accessing properties
+
+You can access the graph properties using the `graph_properties`, `vertex_properties` and `edge_properties` methods. If you want to find a list of all available properties, you can use the `graph_property_names`, `vertex_property_names` and `edge_property_names` methods.
+
+```js
+const graph = await Graph.from_url("<path-to-graph-file>");
+
+// get a list of all available graph properties
+console.log(graph.graph_property_names());
+
+// get the value of a graph property
+console.log(graph.graph_properties("<name>"));
+```
+
+Generally the property methods return a typed array. Depending on the property type it will be cast to the appropriate JavaScript type. For example, a `Vec<f32>` property will be cast to a `Float32Array`.
+
+#### Accessing the graph structure
+
+You can access the graph structure using the `vertices` and `edges` getter. These methods return a typed array of the vertex and edge indices.
+
+```js
+
+// Defined as getters
+const num_vertices = graph.num_vertices;
+const num_edges = graph.num_edges;
+
+ // returns a BigUint64Array
+const vertices = graph.vertices()
+
+// returns a BigUint64Array, BigUint64Array (from_vertex, to_vertex)
+const edges = graph.edges();
+
+```
+
+You can also get the `in_neighbors` and `out_neighbors` of a given vertex.
+
+```js
+const vertex = 0;
+const in_edges = graph.in_neighbors(vertex);
+const out_edges = graph.out_neighbors(vertex);
+```
+
+
+### Limitations
+
+JavaScript (nor rust) do support 128-bit integers and 128-bit floating point numbers out of the box. Therefore, any 128 bit value is rounded, here a `BigInt64Array`or `Float64Array` is returned to JS. There is a loss of precision when using 128-bit floats. This is not a problem for most use cases, but it is something to be aware of.
+
+Further this limits the maximum number of vertices and edges to 2^64. This should be sufficient for most use cases, but it is something to be aware of.
 
 ### Rust
 
-In theory you can also use the library directly from Rust. However, I'm not too experienced with Rust and I haven't tested this yet. If you want to give me a hand, feel free to open a PR.
+In theory you can also use the library directly in Rust. However, I'm not too experienced with Rust and I haven't tested this yet. Generally one would have to introduce a feature flag and move all wasm specific code into this feature. Then one should be able to use the library as a normal Rust library.
+
+If you want to give me a hand, feel free to open a PR. 
 
 
 ## Development

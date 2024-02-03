@@ -5,6 +5,7 @@ use std::io::Read;
 use byteorder::{LittleEndian, ReadBytesExt};
 use wasm_bindgen::JsValue;
 
+#[derive(PartialEq)]
 pub enum PropertyMapType {
     Graph,
     Vertex,
@@ -12,7 +13,7 @@ pub enum PropertyMapType {
 }
 
 impl TryFrom<u8> for PropertyMapType {
-    type Error = JsValue;
+    type Error = String;
     fn try_from(value: u8) -> Result<Self, Self::Error> {
         match value {
             0x00 => Ok(PropertyMapType::Graph),
@@ -96,16 +97,16 @@ impl Property {
      */
     pub fn from_data(
         cursor: &mut std::io::Cursor<&[u8]>,
-        num_nodes: u64,
+        num_vertices: u64,
         num_edges: u64,
-    ) -> Result<Property, JsValue> {
+    ) -> Result<Property, String> {
         // Property map type
         let property_map_type = cursor.read_u8().unwrap();
         let property_map_type = PropertyMapType::try_from(property_map_type)?;
 
         let length = match property_map_type {
             PropertyMapType::Graph => 1,
-            PropertyMapType::Vertex => num_nodes,
+            PropertyMapType::Vertex => num_vertices,
             PropertyMapType::Edge => num_edges,
         };
 
@@ -278,6 +279,9 @@ impl Property {
         Ok(property)
     }
 
+    /// Get the data as a JsValue
+    /// This is used to return the data to js
+    /// Note that the data is not copied
     pub fn data_view(&mut self) -> JsValue {
         match &mut self.data {
             PropertyData::Bool(v) => unsafe {
@@ -412,7 +416,7 @@ impl Property {
 }
 
 impl TryFrom<u8> for PropertyType {
-    type Error = JsValue;
+    type Error = String;
     fn try_from(value: u8) -> Result<Self, Self::Error> {
         match value {
             0x00 => Ok(PropertyType::Bool),

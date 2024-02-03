@@ -16,8 +16,8 @@ const PKG_VERSION: &str = env!("CARGO_PKG_VERSION");
  *  [8:15] comment length (c): u64
  *  [16:16+c] comment: String
  *  [17+c] directed: bool
- *  [18+c:25+c] number of nodes (n): u64
- *  [26+c:26+c+8*n=t]  list of out-neighbors of all N nodes in sequence (u64 * n)
+ *  [18+c:25+c] number of vertices (n): u64
+ *  [26+c:26+c+8*n=t]  list of out-neighbors of all N vertices in sequence (u64 * n)
  *  [t:t+8] number of properties (p): u64
  *     -  for each property:
  *     - [t+8] key type: u8 (0x00 = graph prop, 0x01 = vertex prop, 0x02 = edge prop)
@@ -33,7 +33,7 @@ pub struct GraphFile {
 
     comment: String,
     pub directed: bool,
-    pub num_nodes: u64,
+    pub num_vertices: u64,
     pub num_edges: u64,
     pub out_neighbors: Vec<Vec<u64>>,
 
@@ -53,7 +53,7 @@ impl Default for GraphFile {
             endianness: 0,
             comment: comment,
             directed: false,
-            num_nodes: 0,
+            num_vertices: 0,
             num_edges: 0,
             out_neighbors: Vec::new(),
             properties: Vec::new(),
@@ -68,7 +68,7 @@ impl Debug for GraphFile {
             .field("endianness", &self.endianness)
             .field("comment", &self.comment)
             .field("directed", &self.directed)
-            .field("num_nodes", &self.num_nodes)
+            .field("num_vertices", &self.num_vertices)
             .field("num_edges", &self.num_edges)
             .field("properties", &self.properties)
             .finish()

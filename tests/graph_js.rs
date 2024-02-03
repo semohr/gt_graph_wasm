@@ -1,4 +1,4 @@
-use gt_graph_wasm::Graph;
+use gt_graph_wasm::GraphJS;
 
 use wasm_bindgen_test::*;
 
@@ -7,9 +7,9 @@ async fn test_from_url() {
     let url = "https://networks.skewed.de/net/advogato/files/advogato.gt.zst".to_string();
 
     // Create a promise that is ready on the next tick of the micro task queue.
-    let graph = Graph::from_url(url).await.unwrap();
+    let graph = GraphJS::from_url(url).await.unwrap();
 
-    assert_eq!(graph.num_nodes(), 6541);
+    assert_eq!(graph.num_vertices(), 6541);
     assert_eq!(graph.num_edges(), 51127);
 }
 
@@ -19,11 +19,11 @@ async fn test_from_netzschleuder() {
     let sub_network = Some("advogato".to_string());
 
     // Create a promise that is ready on the next tick of the micro task queue.
-    let graph = Graph::from_netzschleuder(network, sub_network)
+    let graph = GraphJS::from_netzschleuder(network, sub_network)
         .await
         .unwrap();
 
-    assert_eq!(graph.num_nodes(), 6541);
+    assert_eq!(graph.num_vertices(), 6541);
     assert_eq!(graph.num_edges(), 51127);
 }
 
@@ -178,11 +178,11 @@ async fn test_from_data() {
         110, 212, 153, 103, 93, 74, 10, 5, 148, 175, 198, 12, 251, 142, 156, 60, 159, 130, 124, 99,
         12, 194, 41, 214, 31,
     ];
-    let graph = Graph::try_from(data);
+    let graph = GraphJS::try_from(data);
 
     match graph {
         Ok(graph) => {
-            assert_eq!(graph.num_nodes(), 77);
+            assert_eq!(graph.num_vertices(), 77);
             assert_eq!(graph.num_edges(), 254);
         }
         Err(_) => panic!("Error reading graph"),

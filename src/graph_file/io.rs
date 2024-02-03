@@ -2,14 +2,12 @@ use std::io::Read;
 
 use super::GraphFile;
 use crate::graph_file::properties::Property;
-use crate::log;
 use byteorder::{LittleEndian, ReadBytesExt};
-use wasm_bindgen::prelude::*;
 
 impl TryFrom<&[u8]> for GraphFile {
-    type Error = JsValue;
+    type Error = String;
 
-    fn try_from(file: &[u8]) -> Result<Self, JsValue> {
+    fn try_from(file: &[u8]) -> Result<Self, Self::Error> {
         let mut cursor = std::io::Cursor::new(file);
         let magic_string = &[0xe2, 0x9b, 0xbe, 0x20, 0x67, 0x74];
         if file.len() < 14 {
@@ -44,11 +42,11 @@ impl TryFrom<&[u8]> for GraphFile {
         // Read directed
         let directed = cursor.read_u8().unwrap() == 0x01;
 
-        // Read number of nodes
-        let num_nodes = cursor.read_u64::<LittleEndian>().unwrap();
+        // Read number of vertices
+        let num_vertices = cursor.read_u64::<LittleEndian>().unwrap();
 
         // Read neighbor list
-        let out_neighbors = get_out_neighbors(&mut cursor, num_nodes);
+        let out_neighbors = get_out_neighbors(&mut cursor, num_vertices);
 
         // Calculate number of edges
         let num_edges: u64 = out_neighbors
@@ -63,28 +61,27 @@ impl TryFrom<&[u8]> for GraphFile {
 
         let properties: Vec<Property> = (0..num_properties)
             .into_iter()
-            .map(|_| Property::from_data(&mut cursor, num_nodes, num_edges))
-            .collect::<Result<Vec<Property>, JsValue>>()?;
+            .map(|_| Property::from_data(&mut cursor, num_vertices, num_edges))
+            .collect::<Result<Vec<Property>, String>>()?;
 
         let gf = GraphFile {
             version_number: version_number,
             endianness: endianness,
             comment: comment,
             directed: directed,
-            num_nodes: num_nodes,
+            num_vertices: num_vertices,
             num_edges: num_edges,
             out_neighbors: out_neighbors,
             properties: properties,
         };
-        console_log!("Successfully loaded {:#?}", gf);
 
         Ok(gf)
     }
 }
 
-fn get_out_neighbors(cursor: &mut std::io::Cursor<&[u8]>, num_nodes: u64) -> Vec<Vec<u64>> {
+fn get_out_neighbors(cursor: &mut std::io::Cursor<&[u8]>, num_vertices: u64) -> Vec<Vec<u64>> {
     let s_t;
-    match num_nodes {
+    match num_vertices {
         n if n <= u8::MAX as u64 => {
             s_t = std::mem::size_of::<u8>();
         }
@@ -101,7 +98,7 @@ fn get_out_neighbors(cursor: &mut std::io::Cursor<&[u8]>, num_nodes: u64) -> Vec
 
     let mut out_neighbors: Vec<Vec<u64>> = Vec::new();
 
-    for _ in 0..num_nodes {
+    for _ in 0..num_vertices {
         // Get num neighbors for each node
         let num_neighbors = cursor.read_u64::<LittleEndian>().unwrap() as usize;
 

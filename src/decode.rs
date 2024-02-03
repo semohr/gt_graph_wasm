@@ -3,13 +3,12 @@ use ruzstd::frame_decoder::FrameDecoderError;
 use ruzstd::{BlockDecodingStrategy, FrameDecoder};
 use std::io::Read;
 use std::io::Seek;
-use wasm_bindgen::JsValue;
 
 use crate::log;
 
 /* Decompress the buffer if it is compressed
 */
-pub fn decodebuffer(input: &[u8]) -> Result<Vec<u8>, JsValue> {
+pub fn decodebuffer(input: &[u8]) -> Result<Vec<u8>, String> {
     match &input[0..6] {
         //xz (.xz) format description, starts with 0xfd, 0x37, 0x7a, 0x58, 0x5a, 0x00
         &[0xfd, 0x37, 0x7a, 0x58, 0x5a, 0x00] => {

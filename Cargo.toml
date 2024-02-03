@@ -1,8 +1,10 @@
 [package]
 name = "gt_graph_wasm"
-version = "1.0.0"
+version = "1.0.1"
 authors = ["Wasm & Rust interface for gt graph file format"]
 edition = "2021"
+license = "GPL-3.0"
+repository = "https://github.com/semohr/gt_graph_wasm"
 
 [features]
 default = ["console_error_panic_hook"]

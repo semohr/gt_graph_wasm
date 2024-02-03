@@ -1,11 +1,25 @@
 #[macro_use]
 mod utils;
 
-mod decode;
-pub mod graph;
+/** The Graph struct represents a graph and provides a number
+ * of methods to access the data.
+ *
+ * We supply a number of wrappers for interacting with the graph
+ * from JavaScript.
+ */
+mod graph;
+pub use graph::Graph;
+mod graph_js;
+pub use graph_js::GraphJS;
+
+/** Decoding for compress data
+ *
+ * at the moment only zstd is supported
+ */
+pub mod decode;
+
 pub mod graph_file;
 
-pub use graph::Graph;
 pub use graph_file::GraphFile;
 mod io;
 
